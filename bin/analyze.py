@@ -22,7 +22,7 @@ def analyze_all(frame):
     frame.validate_frame()
      
     # Finding number of leaflets:
-    n_leaflets = detect_leaflets('wrap.gro', 'wrap.xtc')
+    n_leaflets = detect_leaflets('wrap.gro')
     
     # Calculates directors for a given set of residues
     tail_info = analysis.utils.calc_all_directors(frame.xyz,
@@ -59,7 +59,7 @@ def analyze_all(frame):
         leaflet_tilt = analysis.utils.calc_tilt_angle(leaflet_directors)
 
         if len(leaflet_tilt) < int(len(mask)/n_leaflets):
-            leaflet_tilt = np.pad(leaflet_tilt, (0, int(len(mask)/leaflets - len(leaflet_tilt))), constant_values=np.nan)
+            leaflet_tilt = np.pad(leaflet_tilt, (0, int(len(mask)/n_leaflets - len(leaflet_tilt))), constant_values=np.nan)
             
         leaflet_apt = (frame.unitcell_lengths[0] * frame.unitcell_lengths[1] /
                        np.sum(mask))
