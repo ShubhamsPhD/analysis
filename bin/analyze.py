@@ -38,8 +38,7 @@ def analyze_all(frame):
     peaks = analysis.height.calc_peaks(
                 z, [np.min(z), np.max(z)],
                 n_layers=n_leaflets,
-                prominence=0,
-                distance=50,
+                distance=20,
                 threshold=[0, n_leaflets]
                 )
 
@@ -58,6 +57,10 @@ def analyze_all(frame):
                               coms[:,2] < lmax)
         leaflet_directors = directors[mask]
         leaflet_tilt = analysis.utils.calc_tilt_angle(leaflet_directors)
+
+        if len(leaflet_tilt) < int(len(mask)/n_leaflets):
+            leaflet_tilt = np.pad(leaflet_tilt, (0, int(len(mask)/leaflets - len(leaflet_tilt))), constant_values=np.nan)
+            
         leaflet_apt = (frame.unitcell_lengths[0] * frame.unitcell_lengths[1] /
                        np.sum(mask))
         leaflet_s2 = analysis.utils.calc_order_parameter(leaflet_directors)
@@ -67,7 +70,7 @@ def analyze_all(frame):
 
     # Calculate Area per Lipid: cross section / n_lipids
     apl = (frame.unitcell_lengths[0] * frame.unitcell_lengths[1] /
-            len(frame.residuelist) * frame.n_leaflets)
+            len(frame.residuelist) * n_leaflets)
 
     # Calculate the height -- uses the "head" atoms specified below
     if frame.cg:
@@ -79,11 +82,13 @@ def analyze_all(frame):
         atoms = frame.select(mass_range=atomselection)
     height = analysis.height.calc_height(frame, atoms)
 
+    tilt_array = np.array(tilt)
     results = {'tilt' :  np.array(tilt),
                 's2' : s2,
                 'apl' : apl,
                 'apt' : np.array(apt),
                 'height' : np.array(height)}
+    print(results)
     return results
 
 def main():
