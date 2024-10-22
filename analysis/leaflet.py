@@ -2,9 +2,9 @@ import MDAnalysis as mda
 from sklearn.cluster import DBSCAN
 import numpy as np
 
-def detect_leaflets(traj_file, top_file, lipid_resname='ucer2', headgroup_name='O80', tailgroup_name='C71', eps=1, min_samples=10):
+def detect_leaflets(top_file = 'wrap.gro', lipid_resname='ucer2', headgroup_name='O80', tailgroup_name='C71', eps=1, min_samples=10):
     # Load result files
-    res = mda.Universe(top_file, traj_file)
+    res = mda.Universe(top_file)
 
     # Selecting lipid headgroup and tailgroup atoms
     lipids = res.select_atoms(f'resname {lipid_resname}')
