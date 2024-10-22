@@ -8,6 +8,7 @@ import mdtraj as md
 import analysis
 from analysis.frame import Frame
 import copy as cp
+from analysis.leaflet import detect_leaflets
 
 def analyze_all(frame):
     # Prints frame number to terminal for each frame.
@@ -19,7 +20,10 @@ def analyze_all(frame):
 
     # Unpack inputs
     frame.validate_frame()
-
+     
+    # Finding number of leaflets:
+    n_leaflets = detect_leaflets('wrap.gro', 'wrap.xtc')
+    
     # Calculates directors for a given set of residues
     tail_info = analysis.utils.calc_all_directors(frame.xyz,
                                                   frame.masses,
@@ -33,10 +37,10 @@ def analyze_all(frame):
     z = coms[:,2]
     peaks = analysis.height.calc_peaks(
                 z, [np.min(z), np.max(z)],
-                n_layers=frame.n_leaflets,
+                n_layers=n_leaflets,
                 prominence=0,
                 distance=50,
-                threshold=[0, frame.n_leaflets]
+                threshold=[0, n_leaflets]
                 )
 
     # Get z-ranges encompassing each leaflet
