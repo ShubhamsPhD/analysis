@@ -51,15 +51,15 @@ def calc_peaks(z, z_range, weights=None, n_layers=0, window=41, smooth=True, **k
     # Gets peak indices
     # Prominance: https://en.wikipedia.org/wiki/Topographic_prominence
     if "prominence" not in kwargs:
-        kwargs["prominence"] = np.max(hist) * 0.25
+        kwargs["prominence"] = np.max(hist) * 0.1
     if "distance" not in kwargs:
-        kwargs["distance"] = 25
+        kwargs["distance"] = 20
     if "threshold" not in kwargs:
         kwargs["threshold"] = [0, n_layers]
     peaks, _ = find_peaks(hist, **kwargs)
     peaks = np.sort(peaks)
     peaks = bins[peaks]
-
+"""
     # Warns if there is an unequal number of peaks and layers
     if len(peaks) != n_layers:
         warnings.warn(
@@ -76,7 +76,38 @@ def calc_peaks(z, z_range, weights=None, n_layers=0, window=41, smooth=True, **k
                     np.append(peaks, 2 * peaks[-1] - peaks[-2])
                 except IndexError:
                     np.append(peaks, peaks[-1])
+"""
 
+    zmin = np.min(z)
+    zmax = np.max(z)
+
+    # Check if the number of detected peaks matches the expected number
+    if len(peaks) != n_layers:
+        if len(peaks) > n_layers:
+            peaks = peaks[:n_layers]
+
+        elif len(peaks) < n_layers:
+            if len(peaks) == 0:
+                # If no peaks are detected, evenly space the expected peaks
+                peaks = np.linspace(zmin, zmax, n_layers)
+
+
+            elif len(peaks) == 1:
+                if n_layers == 2:
+                    # For 1 detected peak and 2 expected layers, interpolate
+                    predicted_peaks = np.array([peaks[0], peaks[0]])
+                    peaks = np.sort(predicted_peaks)
+                elif n_layers > 2:
+                    # For more than 2 layers, linearly interpolate
+                    predicted_peaks = np.linspace(zmin, zmax, n_layers)
+                    closest_idx = np.argmin(np.abs(predicted_peaks - peaks[0]))
+                    predicted_peaks[closest_idx] = peaks[0]
+                    peaks = np.sort(predicted_peaks)
+
+            elif len(peaks) > 2:
+                # If more than 2 peaks are detected, we can linearly interpolate the expected number of layers
+                predicted_peaks = np.linspace(peaks[0], peaks[-1], n_layers)
+                peaks = np.unique(np.concatenate([peaks, predicted_peaks]))[:n_layers]
     return peaks
 
 
